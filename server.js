@@ -16,7 +16,7 @@ app.use('/user', userRoutes)
 mongo_uri = "mongodb+srv://eudisville:50G2OK@cluster35.wu2xhof.mongodb.net/"
 mongoose.connect(mongo_uri, {
 
-}).then("Mongo connected")
+}).then(() => console.log("Mongo conncted"))
 .catch((err) => console.log(`Error : ${err}`))
 
 const PORT = process.env.PORT || 5000

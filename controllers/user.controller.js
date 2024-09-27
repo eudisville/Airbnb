@@ -25,21 +25,29 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body
+        const { email, password } = req.body;
 
-        // Check presence of email and password
-        if(!email || !password) return res.status(400).json({ message: "Email and password are required!" });
+        // Verify if user exists in the DB
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required!" });
+        }
 
-        // Match the password
-        const isPasswordCorrect = await user.isValidatedPassword(password)
+        // Search user in the DB by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Email or password is incorrect" });
+        }
 
-        if(!isPasswordCorrect) return res.status(400).json({ message: "Email or password is incorrect" });
+        // Compare password with password in the DB
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(400).json({ message: "Email or password is incorrect" });
+        }
 
-        // If everything is fine, send the token
-        cokenToken(user, res)
-    }
-    catch(err) {
-        res.status(400).json({ message: `Error: ${err}`})
+        // If right, send cookie
+        cookieToken(user, res);
+    } catch (err) {
+        res.status(500).json({ message: `Error: ${err.message}` });
     }
 }
 
@@ -47,8 +55,8 @@ exports.logout = async (req, res) => {
     res.cookie('token', null, {
       expires: new Date(Date.now()),
       httpOnly: true,
-      secure: true,   // Only send over HTTPS
-      sameSite: 'none' // Allow cross-origin requests
+      secure: true,
+      sameSite: 'none'
     });
     res.status(200).json({
       success: true,

@@ -1,3 +1,7 @@
+const dotenv = require("dotenv")
+
+dotenv.config()
+
 const cookieToken = (user, res) => {
     const token = user.getJwtToken();
 
